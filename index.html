@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Forty Fives</title>
+		<link rel="stylesheet" href="example.css"/>
+	</head>
+	<body>
+		<div class="container">
+			<div class="menu">
+				<h1>Forty Fives</h1>
+				<h4>Create a new Game</h4>
+				<input type="text" name="name" id="nameNew" placeholder="Enter your name"  onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (e.keyCode >= 48 && e.keyCode <= 57))' required>
+				<button id="new">New Game</button>
+				<br><br>
+				<h4>Join an existing game</h4>
+				<input type="text" name="name" id="nameJoin" placeholder="Enter your name" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (e.keyCode >= 48 && e.keyCode <= 57))' required>
+				<input type="text" name="room" id="room" placeholder="Enter Game ID" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (e.keyCode >= 48 && e.keyCode <= 57))' required>
+				<button id="join">Join Game</button>
+			</div>
+			<div class="gameTable" style="display: none;">
+        <h1>Forty Fives</h1>
+      
+        <img class="preload" src="img/cards.png"/>
+        <!-- For debugging -->
+        <div id="currentState"> </div>
+
+        <div id="card-table" style="position: relative">
+          <button id="deal" >Deal</button> 
+          <button id="sitButton0" style="position: absolute; left: 50%; top: 0">Sit1</button> 
+          <button id="sitButton1" style="position: absolute; top: 50%; right: 0">Sit2</button> 
+          <button id="sitButton2" style="position: absolute; right: 50%; bottom: 0">Sit3</button>
+          <button id="sitButton3" style="position: absolute; bottom: 50%; left: 0">Sit4</button>
+        </div>
+			</div>
+		</div>
+		<script src="node_modules/jquery/dist/jquery.min.js"></script>
+		<script src="socket.io/socket.io.js"></script>
+    <script src="cards.js"></script>
+    <script src="table.js"></script>
+		<script src="client.js"></script>
+    <script>
+      (new URL(window.location.href)).searchParams.forEach((x, y) =>
+        document.getElementById(y).value = x)
+    </script>
+	</body>
+</html>
