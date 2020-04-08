@@ -25,11 +25,11 @@
         <div id="currentState"> </div>
 
         <div id="card-table" style="position: relative">
-          <button id="deal" >Deal</button>
-          <div id="divPlayer0" style="position: absolute; left: 50%; top: 0"></div>
-          <div id="divPlayer1" style="position: absolute; top: 50%; right: 0"></div>
-          <div id="divPlayer2" style="position: absolute; right: 50%; bottom: 0"></div>
-          <div id="divPlayer3" style="position: absolute; bottom: 50%; left: 0"></div>
+          <button id="start" style="left: 50%; top: 50%">Start</button>
+          <div id="divPlayer0" class="seat-div" style="left: 50%; top: 0"></div>
+          <div id="divPlayer1" class="seat-div" style="top: 50%; right: 0"></div>
+          <div id="divPlayer2" class="seat-div" style="right: 50%; bottom: 0"></div>
+          <div id="divPlayer3" class="seat-div" style="bottom: 50%; left: 0"></div>
         </div>
 			</div>
 		</div>
@@ -40,13 +40,16 @@
 
 				var newButton = document.createElement('button');
 				newButton.innerHTML = "Sit";
-				newButton.id = "button" + i;
+				newButton.id = "sitButton" + i;
 				relDiv.appendChild(newButton);
+        
+        var br1 = document.createElement("br");
+        relDiv.appendChild(br1);
 
-				var newButton = document.createElement('button');
-				newButton.innerHTML = "Sit2";
-				newButton.id = "button" + i;
-				relDiv.appendChild(newButton);
+				var seatLabel = document.createElement('div');
+        seatLabel.innerHTML = "Empty";
+				seatLabel.id = "seatLabel" + i;
+				relDiv.appendChild(seatLabel);
 
 				document.getElementById("divPlayer" + i).appendChild(relDiv);
 			}

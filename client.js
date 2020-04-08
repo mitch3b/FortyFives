@@ -13,12 +13,18 @@
   function sitPlayer(sittingPlayerName, seatNum) {
     console.log("Player sat: " + sittingPlayerName + "in seat: " + seatNum);
     //For now just reuse the button as name field
-    $('#sitButton' + seatNum).html(sittingPlayerName);
-    $('#sitButton' + seatNum).prop('disabled', true);
+    $('#seatLabel' + seatNum).html(sittingPlayerName);
     
     if(sittingPlayerName == name) {
       mySeat = seatNum;
-      $('[id^="sitButton"]').prop('disabled', true);
+      //Hide all
+      $('[id^="sitButton"]').css("display", "none");
+      $('#sitButton' + seatNum).css("display", "inline-block");
+      $('#sitButton' + seatNum).html("Leave Seat");
+    }
+    else {
+      // Hide the sat seated in
+      $('#sitButton' + seatNum).css("display", "none");
     }
   }
   
@@ -74,11 +80,22 @@
   $('[id^="sitButton"]').click(function() {
     var seatNum = this.id.replace('sitButton', ''); 
     
-    socket.emit('tryToSit', { name, roomId: roomId, seatNum: seatNum});
+    if(this.innerHTML === "Sit") {
+      socket.emit('tryToSit', { name, roomId: roomId, seatNum: seatNum});
+    }
+    else {
+      alert("TODO: This feature is currently not supported. Sorry!");
+    }
   });
   
   socket.on('playerSat', (data) => {
+    console.log("Sever said to sit player " + data.name + " in seat " + data.seatNum + ". Total seats filled: " + data.numSeatsFilled);
+    
     sitPlayer(data.name, data.seatNum);
+    
+    if(data.numSeatsFilled == $('[id^="sitButton"]').length) {
+      $('#start').css("display", "block");
+    }
   });
   
   socket.on('alert', (data) => {

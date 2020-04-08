@@ -127,19 +127,29 @@ io.on('connection', (socket) => {
     socket.on('tryToSit', (data) => {
       console.log("Player: " + data.name + " trying to sit in seat: " + data.seatNum + " of room: " + data.roomId);
       
-      //TODO something with game state
-      var game = games.get(data.roomId);
-      if(!game.seatOpen(data.seatNum)) {
-        console.log("Player: " + data.name + " cannot sit in taken seat: " + data.seatNum + " of room: " + data.roomId);
-        socket.emit('alert', { message: 'Seat already taken...' });
-        return;
-      }
-      
-      game.addPlayer(data.name, data.seatNum);
+      try {
+        
+        //TODO something with game state
+        var game = games.get(data.roomId);
+        if(!game.seatOpen(data.seatNum)) {
+          console.log("Player: " + data.name + " cannot sit in taken seat: " + data.seatNum + " of room: " + data.roomId);
+          socket.emit('alert', { message: 'Seat already taken...' });
+          return;
+        }
+        
+        game.addPlayer(data.name, data.seatNum);
+        data.numSeatsFilled = game.getNumPlayersSeated();
 
-      io.in(data.roomId).emit('playerSat', data);
+        io.in(data.roomId).emit('playerSat', data);
+      } catch(err) {
+        handleError("Error adding Player: " + data.name + " to seat: " + data.seatNum + " of room: " + data.roomId + ". Error: " + err);
+      }
     });
 
+    function handleError(errorMessage) {
+      console.log(errorMessage);
+      socket.emit('alert', { message: errorMessage });
+    }
 
     socket.on('disconnect', function() {
       try {

@@ -17,6 +17,12 @@ body {
 	text-align:center;
 }
 
+.seat-div {
+  position: absolute;
+  display: block;
+  text-align: center;
+}
+
 a img {
 	position: absolute; 
 	top: 0; 
@@ -32,8 +38,10 @@ img.preload {
 	display:none;
 }
 
-#deal {
+#start {
 	display:none;
+  position: absolute;
+  text-align: center;
 }
 h1 {
 	font-size:60px;

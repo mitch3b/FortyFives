@@ -27,30 +27,45 @@ class Game {
   }
   
   seatOpen(seatNum) {
-    return this.players[Number(seatNum)] == "";
+    if(this.players[Number(seatNum)]) {
+      return false;
+    }
+    
+    return true;
   }
   
   getNumPlayersSeated() {
+    console.log("counting players...");
     var count = 0;
     
     for(var i = 0 ; i < this.players.length ; i++) {
-      if(!this.seatOpen(this.players[i])) {
-        count += count;
+      console.log("seat " + i + "has player " + this.players[i]);
+      if(!this.seatOpen(i)) {
+        console.log("seat " + i + "not seated " + this.players[i]);
+        count += 1;
       }
     }
-    
+        console.log("counting players... " + count);
     return count;
   }
   
   addPlayer(player, seatNum) {
+    console.log("Adding player " + player + " to seat " + seatNum);
     if(this.state != "setup") {
       throw "Can't add player. Not in setup. Currently in: " + this.state;
     }
     
     if(!this.seatOpen(seatNum)) {
-      throw "Can't add player: " + this.player + " to seat " + this.seatNum + ". Already taken by: " + this.players[seatNum];
+      throw "Can't add player: " + player + " to seat " + seatNum + ". Already taken by: " + this.players[seatNum];
     }
     
+    for(var i = 0 ; i < this.players.length ; i++) {
+      if(player == this.players[i]) {
+        throw "Can't add player: " + player + " to seat " + seatNum + ". Already taken in seat: " + i;
+      }
+    }
+    
+    console.log("Adding player " +   this.players[seatNum] + " to seat " + seatNum);
     this.players[seatNum] = player;
   }
 
