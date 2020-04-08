@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
         socket.emit('alert', { message: 'Username must be only letters and numbers' });
         return;
       }
-      
+
       var game = new Game(4);
       game.addPlayerToRoom(data.name);
       connectedUserId = data.name;
@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
 
     socket.on('restartGame', (data) => {
       var game = games.get(data.roomId);
- 
+
 
       io.in(data.roomId).emit("InitForJoiningPlayer", { name: data.name, roomId: data.roomId, game: JSON.stringify(game, Set_toJSON)})
       games.set(data.roomId,  game);
@@ -72,7 +72,7 @@ io.on('connection', (socket) => {
     // #################################
     socket.on('attemptToJoinGame', function (data) {
       console.log("Adding Player: " + data.name + " to game " + data.roomId);
-      
+
       if(!isAlphaNumeric(data.name)) {
         console.log("Can't create game with invalid username: " + data.name);
         socket.emit('alert', { message: 'Username must be only letters and numbers' });
@@ -126,9 +126,9 @@ io.on('connection', (socket) => {
 
     socket.on('tryToSit', (data) => {
       console.log("Player: " + data.name + " trying to sit in seat: " + data.seatNum + " of room: " + data.roomId);
-      
+
       try {
-        
+
         //TODO something with game state
         var game = games.get(data.roomId);
         if(!game.seatOpen(data.seatNum)) {
@@ -136,7 +136,7 @@ io.on('connection', (socket) => {
           socket.emit('alert', { message: 'Seat already taken...' });
           return;
         }
-        
+
         game.addPlayer(data.name, data.seatNum);
         data.numSeatsFilled = game.getNumPlayersSeated();
 
@@ -145,10 +145,10 @@ io.on('connection', (socket) => {
         handleError("Error adding Player: " + data.name + " to seat: " + data.seatNum + " of room: " + data.roomId + ". Error: " + err);
       }
     });
-    
+
     socket.on('startGame', (data) => {
       var game = games.get(data.roomId);
-      
+
       //TODO make sure all seats are taken
       if(game.getState() != "setup") {
         //This could happen if two people clicked start at  the same time
@@ -158,8 +158,47 @@ io.on('connection', (socket) => {
       game.startGame();
 
       io.in(data.roomId).emit("gameStart", { name: data.name, roomId: data.roomId, game: JSON.stringify(game, Set_toJSON)})
+
       games.set(data.roomId,  game); //TODO this probably isn't necessary
       console.log("Starting Game: " + data.roomId + " requested by " + data.name);
+
+      newHand(data);
+    });
+
+    function newHand(data) {
+      var game = games.get(data.roomId);
+
+      //TODO make sure all seats are taken
+      if(game.getState() != "bid") {
+        //This could happen if two people clicked start at  the same time
+        console.log("WARN: Player " + data.name + " requested to start game " + data.roomId + " which is already in state " + game.getState());
+      }
+
+      game.newHand();
+
+      io.in(data.roomId).emit("startBidding", { name: data.name, roomId: data.roomId, game: JSON.stringify(game, Set_toJSON), biddingOptions: game.getBidOptions()})
+    }
+
+    socket.on('bid', (data) => {
+      var game = games.get(data.roomId);
+
+      //TODO make sure all seats are taken
+      if(game.getState() != "bid") {
+        handleError("Can't bid. Current game state is: " + game.getState());
+      }
+
+      //Update bid
+      game.makeBid(data.name, data.mySeat, data.bid);
+
+      if(game.getState() === "bid") {
+        io.in(data.roomId).emit("nextBid", { bidder: data.name, roomId: data.roomId, bid: data.bid,           currentTurnIndex: game.getCurrentTurnIndex(), biddingOptions: game.getBidOptions()});
+      }
+      else if(game.getState() === "pickSuit"){
+        io.in(data.roomId).emit("biddingComplete", { bidder: data.name, roomId: data.roomId, bid: data.bid});
+      }
+      else {
+        handleError("After making bid, state updated to something wrong: " + game.getState());
+      }
     });
 
     function handleError(errorMessage) {

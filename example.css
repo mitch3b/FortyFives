@@ -1,17 +1,17 @@
-html { 
-	background-color:#092E20; 
+html {
+	background-color:#092E20;
 }
 
-body { 
+body {
 	position:relative;
-	border-radius:8px; 
-	box-shadow:black 0px 0px 2px; 
-	width: 600px; 
-	background:#FFF; 
-	margin:20px auto; 
-	border:solid 1px black; 
-	font-family: arial, sans-serif; 
-	padding:50px;  
+	border-radius:8px;
+	box-shadow:black 0px 0px 2px;
+	width: 600px;
+	background:#FFF;
+	margin:20px auto;
+	border:solid 1px black;
+	font-family: arial, sans-serif;
+	padding:50px;
 }
 #buttons {
 	text-align:center;
@@ -24,10 +24,10 @@ body {
 }
 
 a img {
-	position: absolute; 
-	top: 0; 
-	right: 0; 
-	border: 0;			
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: 0;
 }
 button {
 	height:30px;
@@ -38,10 +38,34 @@ img.preload {
 	display:none;
 }
 
+.centered {
+	margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+/* need to shift this slightly so name is below the cards */
+.vertical-center-ish {
+  margin: 0;
+  position: absolute;
+  top: 62%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.horizontal-center {
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  -ms-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+
 #start {
 	display:none;
-  position: absolute;
-  text-align: center;
 }
 h1 {
 	font-size:60px;
