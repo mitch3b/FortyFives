@@ -19,20 +19,38 @@
 			</div>
 			<div class="gameTable" style="display: none;">
         <h1>Forty Fives</h1>
-      
+
         <img class="preload" src="img/cards.png"/>
         <!-- For debugging -->
         <div id="currentState"> </div>
 
         <div id="card-table" style="position: relative">
-          <button id="deal" >Deal</button> 
-          <button id="sitButton0" style="position: absolute; left: 50%; top: 0">Sit1</button> 
-          <button id="sitButton1" style="position: absolute; top: 50%; right: 0">Sit2</button> 
-          <button id="sitButton2" style="position: absolute; right: 50%; bottom: 0">Sit3</button>
-          <button id="sitButton3" style="position: absolute; bottom: 50%; left: 0">Sit4</button>
+          <button id="deal" >Deal</button>
+          <div id="divPlayer0" style="position: absolute; left: 50%; top: 0"></div>
+          <div id="divPlayer1" style="position: absolute; top: 50%; right: 0"></div>
+          <div id="divPlayer2" style="position: absolute; right: 50%; bottom: 0"></div>
+          <div id="divPlayer3" style="position: absolute; bottom: 50%; left: 0"></div>
         </div>
 			</div>
 		</div>
+		<script>
+			for(var i = 0 ; i < 4 ; i++) {
+				var relDiv = document.createElement('div');
+				relDiv.style.position = "relative";
+
+				var newButton = document.createElement('button');
+				newButton.innerHTML = "Sit";
+				newButton.id = "button" + i;
+				relDiv.appendChild(newButton);
+
+				var newButton = document.createElement('button');
+				newButton.innerHTML = "Sit2";
+				newButton.id = "button" + i;
+				relDiv.appendChild(newButton);
+
+				document.getElementById("divPlayer" + i).appendChild(relDiv);
+			}
+		</script>
 		<script src="node_modules/jquery/dist/jquery.min.js"></script>
 		<script src="socket.io/socket.io.js"></script>
     <script src="cards.js"></script>
