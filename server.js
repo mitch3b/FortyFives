@@ -145,6 +145,22 @@ io.on('connection', (socket) => {
         handleError("Error adding Player: " + data.name + " to seat: " + data.seatNum + " of room: " + data.roomId + ". Error: " + err);
       }
     });
+    
+    socket.on('startGame', (data) => {
+      var game = games.get(data.roomId);
+      
+      //TODO make sure all seats are taken
+      if(game.getState() != "setup") {
+        //This could happen if two people clicked start at  the same time
+        console.log("WARN: Player " + data.name + " requested to start game " + data.roomId + " which is already in state " + game.getState());
+      }
+
+      game.startGame();
+
+      io.in(data.roomId).emit("gameStart", { name: data.name, roomId: data.roomId, game: JSON.stringify(game, Set_toJSON)})
+      games.set(data.roomId,  game); //TODO this probably isn't necessary
+      console.log("Starting Game: " + data.roomId + " requested by " + data.name);
+    });
 
     function handleError(errorMessage) {
       console.log(errorMessage);
@@ -174,35 +190,6 @@ io.on('connection', (socket) => {
      // #################################
      // In Game Events
      // #################################
-    /**
-       * Handle the turn played by either player and notify the other.
-       */
-    socket.on('clickTile', (data) => {
-      console.log("Tile " + data.row + ", " + data.column + " was clicked for room: " + data.room);
-      var game = games.get(data.room);
-
-      // TODO verify its a button presser
-      io.to(data.room).emit('tileClicked', {
-          row: data.row,
-          column: data.column,
-          type: game.makeGuess(data.row, data.column),
-          currentTurn: game.getCurrentTurn(),
-          redsLeft: game.getNumRedsLeft(),
-          bluesLeft: game.getNumBluesLeft(),
-          winner: game.getWinner()
-      });
-    });
-
-    socket.on('turnComplete', (data) => {
-      console.log("Turn complete (done guessing) for room: " + data.room);
-      var game = games.get(data.room);
-      game.turnComplete();
-
-      io.to(data.room).emit('turnUpdate', {
-          currentTurn: game.getCurrentTurn(),
-      });
-    });
-
 
 });
 

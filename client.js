@@ -17,6 +17,7 @@
     
     if(sittingPlayerName == name) {
       mySeat = seatNum;
+      
       //Hide all
       $('[id^="sitButton"]').css("display", "none");
       $('#sitButton' + seatNum).css("display", "inline-block");
@@ -89,13 +90,31 @@
   });
   
   socket.on('playerSat', (data) => {
-    console.log("Sever said to sit player " + data.name + " in seat " + data.seatNum + ". Total seats filled: " + data.numSeatsFilled);
+    console.log("Server said to sit player " + data.name + " in seat " + data.seatNum + ". Total seats filled: " + data.numSeatsFilled);
     
     sitPlayer(data.name, data.seatNum);
     
-    if(data.numSeatsFilled == $('[id^="sitButton"]').length) {
+    //TODO put this back in once done testing
+    //if(data.numSeatsFilled == $('[id^="sitButton"]').length) {
       $('#start').css("display", "block");
-    }
+    //}
+  });
+  
+  $('#start').on('click', () => {
+    socket.emit('startGame', { name, roomId: roomId });
+  });
+  
+  socket.on('gameStart', (data) => {
+    console.log("Server said that " + data.name + " started the game");
+    
+    $('#start').css("display", "none");
+    $('[id^="sitButton"]').css("display", "none");
+    
+    game = JSON.parse(data.game);
+    setMyPlayer(mySeat);
+    setDeck(game.deck);
+    deal();
+    //TODO get the cards, set up the deck, find out who goes first and deal.
   });
   
   socket.on('alert', (data) => {

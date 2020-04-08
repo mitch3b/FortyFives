@@ -14,6 +14,15 @@ class Game {
     this.playersPresent = new Set();
   }
   
+  getState() {
+    return this.state;
+  }
+  
+  startGame() {
+    //TODO
+    return this.state = "bid"
+  }
+  
   hasPlayerAlready(player) {
     return this.playersPresent.has(player);
   }
@@ -35,17 +44,14 @@ class Game {
   }
   
   getNumPlayersSeated() {
-    console.log("counting players...");
     var count = 0;
     
     for(var i = 0 ; i < this.players.length ; i++) {
-      console.log("seat " + i + "has player " + this.players[i]);
       if(!this.seatOpen(i)) {
-        console.log("seat " + i + "not seated " + this.players[i]);
         count += 1;
       }
     }
-        console.log("counting players... " + count);
+    
     return count;
   }
   

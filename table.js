@@ -8,14 +8,13 @@ deck = new cards.Deck();
 deck.x = 50;
 deck.y = 50;
 
-//cards.all contains all cards, put them all in the deck
-deck.addCards(cards.all); 
 //No animation here, just get the deck onto the table.
 deck.render({immediate:true});
 
 let numPlayers = 4;
 let playerHands = [];
 let playerPlayPile = [];
+let isMyTurn = false;
 
 //Now lets create a couple of hands, one face down, one face up.
 playerHands[0] = new cards.Hand({faceUp:false, y:50});
@@ -33,21 +32,75 @@ playerPlayPile[3] = new cards.Deck({faceUp:true, x:250});
 // TODO make these go to their own
 tricksPile = new cards.Deck({faceUp:true, x:550, y:350});
 
+// ? for now just have it always be true
+function setMyTurn(value) {
+  isMyTurn = value;
+}
 
-//Let's deal when the Deal button is pressed:
-$('#deal').click(function() {
-	//Deck has a built in method to deal to hands.
-	$('#deal').hide();
-	deck.deal(5, playerHands, 50);
-  deck.deal(3, [kittyHand], 50);
-});
+function setMyPlayer(playerNum) {
+  playerHands[playerNum].faceUp = true;
 
-
-for(let i = 0; i < numPlayers ; i++) {
-  playerHands[i].click(function(card){
-    // if (allowed)
-    playCard(i, card);
+  playerHands[playerNum].click(function(card){
+    if(isMyTurn) {
+      playCard(playerNum, card);
+    }
   });
+}
+
+function setDeck(customDeck) {
+
+  if(customDeck.length != 52) {
+    console.log("Error: given deck not the right size: " + customDeck.length);
+  }
+
+  var tempDeck = [];
+  for (var i = 0; i < customDeck.length; i++) {
+    var suit = customDeck[i].charAt(0);
+    var mitchRank = customDeck[i].charAt(1);
+    var rank = getRank(mitchRank);
+    
+    tempDeck.push(new cards.Card(suit, rank, '#card-table'));
+  }
+  
+  deck.addCards(tempDeck); 
+  
+  function mouseEvent(ev) {
+		var card = $(this).data('card');
+		if (card.container) {
+			var handler = card.container._click;
+			if (handler) {
+				handler.func.call(handler.context||window, card, ev);
+			}
+		}
+	}
+  
+  $('.card').click(mouseEvent);
+}
+
+function getRank(character) {
+  switch(character) {
+    case 'T': return 10;
+    case 'J': return 11;
+    case 'Q': return 12;
+    case 'K': return 13;
+    case 'A': return 14;
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9': return Number(character);
+  }
+  
+  throw "Trying to make deck out of bad card rank: " + character;
+}
+
+function deal() {
+  $('#deal').hide();
+  deck.deal(5, playerHands, 50);
+  deck.deal(3, [kittyHand], 50);
 }
 
 var numPlays = 0;

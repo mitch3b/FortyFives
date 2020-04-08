@@ -23,7 +23,7 @@ var cards = (function() {
 			}
 		}
 	}
-	
+	  
 	function init(options) {
 		if (options) {
 			for (var i in options) {
@@ -93,7 +93,7 @@ var cards = (function() {
 		toString: function () {
 			return this.name;
 		},
-
+    
 		moveTo : function(x, y, speed, callback) {
 			var props = {top:y-(opt.cardSize.height/2),left:x-(opt.cardSize.width/2)};
 			$(this.el).animate(props, speed || opt.animationSpeed, callback);
