@@ -95,6 +95,25 @@
 
     socket.emit('bid', { name, roomId: roomId, seatNum: mySeat, bid: bid});
   });
+  
+  $('[id^="suit"]').click(function() {
+    var suit = this.id.replace('suit', '');
+    var suitAbbrev = getAbbrevSuit(suit);
+    console.log("Bidding in: " + suitAbbrev);
+
+    socket.emit('chooseSuit', { suit: suitAbbrev});
+  });
+  
+  function getAbbrevSuit(suit) {
+    switch(suit) {
+      case "Clubs": return 'c';
+      case "Diamonds": return 'd';
+      case "Hearts": return 'h';
+      case "Spades": return 's';
+    }
+    
+    throw "Invalid suit: " + suit;
+  }
 
   socket.on('playerSat', (data) => {
     console.log("Server said to sit player " + data.name + " in seat " + data.seatNum + ". Total seats filled: " + data.numSeatsFilled);
@@ -109,7 +128,7 @@
 
   $('#start').on('click', () => {
     socket.emit('startGame', { name, roomId: roomId });
-  });
+  }); 
 
   socket.on('gameStart', (data) => {
     console.log("Server said that " + data.name + " started the game");
@@ -144,10 +163,69 @@
     console.log("Server said : " + data.bidder + " won the bid with: " + data.bid);
 
     hideBidOptions();
+    if(data.bidder == name) {
+      showSuitOptions();
+    }
   });
+  
+  socket.on('pickedSuit', (data) => {
+    console.log("Server said : " + data.bidder + " chose trump: " + data.trump);
+
+    hideSuitOptions();
+    
+    addKittyToHand(data.bidderSeat);
+
+    //Everyone can throw away
+    $('#throwAwayDone').css("display", "block");
+    selectTrump(data.trump, mySeat);
+    setSharedDiscardPile();
+    setMyTurn(true);
+  });
+ 
+  $('#throwAwayDone').on('click', () => {
+    var {numCardsRemaining, indicesToRemove} = getCardsToRemove(mySeat);
+    if(numCardsRemaining < 1 || numCardsRemaining > 5) {
+      alert("Must leave yourself with between 1 and 5 cards.");
+      return;
+    }
+    
+    console.log("sending throw away done to server...");
+    socket.emit('throwAwayDone', {indicesToRemove: JSON.stringify(indicesToRemove)});
+  });
+  
+  socket.on('throwAwayHappened', (data) => {
+    console.log("Server said : " + data.name + " threw away " + data.indicesToRemove.length + " cards");
+    
+    if(data.name == name) {
+      $('#throwAwayDone').css("display", "none");
+    }
+    
+    removeCards(data.seatNum, data.indicesToRemove);
+  });
+ 
+  socket.on('throwAwayComplete', (data) => {
+    console.log("Server said : " + data.name + " threw away all but" + data.indicesToRemove.length + " cards. Throw aways complete!");
+    
+    if(data.name == name) {
+      $('#throwAwayDone').css("display", "none");
+    }
+    
+    //TODO update current turn and start playing!
+    removeCards(data.seatNum, data.indicesToRemove);
+    fillHandsWithNewCards();
+  });
+
 
   function hideBidOptions() {
     $('#divBidOptions').css("display", "none");
+  }
+  
+  function showSuitOptions() {
+    $('#divSuitOptions').css("display", "inline");
+  }
+  
+  function hideSuitOptions() {
+    $('#divSuitOptions').css("display", "none");
   }
 
   function setBidOptions(currentTurnIndex, biddingOptions) {

@@ -79,6 +79,7 @@ var cards = (function() {
 			this.rank = rank;
 			this.name = suit.toUpperCase()+rank;
 			this.faceUp = false;
+      this.selected = false;
 			this.el = $('<div/>').css({
 				width:opt.cardSize.width,
 				height:opt.cardSize.height,
@@ -296,6 +297,9 @@ var cards = (function() {
 			var top = Math.round(this.y-opt.cardSize.height/2, 0);
 			for (var i=0;i<this.length;i++) {
 				this[i].targetTop = top;
+        if(this[i].selected) {
+          this[i].targetTop -= 30;
+        }
 				this[i].targetLeft = left+i*opt.cardSize.padding;
 			}
 		},

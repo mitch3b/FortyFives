@@ -33,7 +33,8 @@ function isAlphaNumeric(str) {
 io.on('connection', (socket) => {
     //Scope of just the current user
     var connectedUserId;
-    var connectUserRoomId;
+    var connectedUserRoomId;
+    var connectedUserSeatNum;
 
     // #################################
     // Create a new game room and notify the creator of game.
@@ -50,7 +51,7 @@ io.on('connection', (socket) => {
       connectedUserId = data.name;
 
       var roomName = `room-${++rooms}`
-      connectUserRoomId = roomName;
+      connectedUserRoomId = roomName;
       socket.join(roomName);
       socket.emit('gameCreated', { name: data.name, roomId: roomName});
       games.set(roomName,  game);
@@ -100,7 +101,7 @@ io.on('connection', (socket) => {
         return;
       }
 
-      connectUserRoomId = data.roomId;
+      connectedUserRoomId = data.roomId;
       game.addPlayerToRoom(data.name);
       connectedUserId = data.name;
       socket.join(data.roomId);
@@ -136,6 +137,8 @@ io.on('connection', (socket) => {
           socket.emit('alert', { message: 'Seat already taken...' });
           return;
         }
+        
+        connectedUserSeatNum = data.seatNum;
 
         game.addPlayer(data.name, data.seatNum);
         data.numSeatsFilled = game.getNumPlayersSeated();
@@ -194,10 +197,59 @@ io.on('connection', (socket) => {
         io.in(data.roomId).emit("nextBid", { bidder: data.name, roomId: data.roomId, bid: data.bid,           currentTurnIndex: game.getCurrentTurnIndex(), biddingOptions: game.getBidOptions()});
       }
       else if(game.getState() === "pickSuit"){
-        io.in(data.roomId).emit("biddingComplete", { bidder: data.name, roomId: data.roomId, bid: data.bid});
+        io.in(data.roomId).emit("biddingComplete", { bidder: game.getBidder(), bidderIndex: game.getBidderIndex(), roomId: data.roomId, bid: game.getBid()});
       }
       else {
         handleError("After making bid, state updated to something wrong: " + game.getState());
+      }
+    });
+    
+    socket.on('chooseSuit', (data) => {
+      console.log("Picking suit: " + data.suit + " in game " + connectedUserRoomId + " by user " + connectedUserId);
+      var game = games.get(connectedUserRoomId);
+
+      //TODO make sure all seats are taken
+      if(game.getState() != "pickSuit") {
+        handleError("Can't pick suit. Current game state is: " + game.getState());
+      }
+      
+      if(game.getBidder() != connectedUserId) {
+        handleError(connectedUserId + " should not be bidding. Bidder is: " + game.getBidder());
+      }
+
+      //Update bid
+      game.pickSuit(connectedUserId, data.suit);
+
+      if(game.getState() === "throwAway") {
+        io.in(connectedUserRoomId).emit("pickedSuit", { trump: data.suit, bidder: game.getBidder(), bidderSeat: game.getBidderIndex()});
+      }
+      else {
+        handleError("After picking suit, state updated to something wrong: " + game.getState());
+      }
+    });
+    
+    socket.on('throwAwayDone', (data) => {
+      var game = games.get(connectedUserRoomId);
+
+      //TODO make sure all seats are taken
+      if(game.getState() != "throwAway") {
+        handleError("Can't throw away. Current game state is: " + game.getState());
+      }
+      
+      var indicesToRemove = JSON.parse(data.indicesToRemove);
+      console.log("Throw away the indices: " + indicesToRemove.toString());
+
+      //Update bid
+      game.throwAwayDone(connectedUserSeatNum, indicesToRemove);
+
+      if(game.getState() === "throwAway") {
+        io.in(connectedUserRoomId).emit("throwAwayHappened", { name: connectedUserId, seatNum: connectedUserSeatNum, indicesToRemove: indicesToRemove});
+      }
+      else if(game.getState() === "makeBid"){
+        io.in(connectedUserRoomId).emit("throwAwayComplete", { name: connectedUserId, seatNum: connectedUserSeatNum, indicesToRemove: indicesToRemove, currentTurn: game.getCurrentTurnIndex()});
+      }
+      else {
+        handleError("After making throw away, state updated to something wrong: " + game.getState());
       }
     });
 
@@ -208,11 +260,11 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', function() {
       try {
-        var game = games.get(connectUserRoomId);
+        var game = games.get(connectedUserRoomId);
         game.removePlayerFromRoom(connectedUserId);
 
         if(game.getNumPlayers() < 1) {
-          console.log("Player " + connectedUserId + " left game " + connectUserRoomId + ". No players left. Deleting game");
+          console.log("Player " + connectedUserId + " left game " + connectedUserRoomId + ". No players left. Deleting game");
 
           games.delete(game);
         }

@@ -13,6 +13,7 @@ class Game {
     this.waitingForAnimation = false;
     this.playersPresent = new Set();
     this.currentBid = 0;
+    this.throwAways = new Array(numPlayers).fill(false)
   }
 
   getCurrentTurnIndex() {
@@ -107,6 +108,18 @@ class Game {
 
     throw "Invalid current bid: " + this.currentBid;
   }
+  
+  getBidder() {
+    return this.players[this.bidderIndex];
+  }
+  
+  getBidderIndex() {
+    return this.bidderIndex;
+  }
+  
+  getBid() {
+    return this.currentBid;
+  }
 
   makeBid(name, seat, bid) {
     //TODO make sure right player
@@ -118,6 +131,9 @@ class Game {
       if(bid != "Pass") {
         this.currentBid = Number(bid);
         this.bidderIndex = this.currentTurnIndex;
+        //TODO remove this. just for debuggin
+        this.state = "pickSuit";
+        this.dealerIndex = this.currentTurnIndex
       }
 
       if(this.dealerIndex == this.currentTurnIndex) {
@@ -133,19 +149,6 @@ class Game {
     return (currentIndex + 1) % this.players.length;
   }
 
-  passBid() {
-    if(this.dealerIndex == this.currentTurnIndex) {
-      if(this.currentBid == 0) {
-        console.log("Dealer got bagged");
-        this.bidderIndex = this.dealerIndex;
-      }
-
-      this.state = "pickSuit";
-    }
-    else {
-      this.currentTurnIndex = getNextIndex(this.currentTurnIndex);
-    }
-  }
 
   pickSuit(player, suit) {
     if(player != this.players[this.bidderIndex]) {
@@ -156,8 +159,19 @@ class Game {
     this.state = "throwAway";
   }
 
-
-
+  throwAwayDone(seatNum, indicesToRemove) {
+    //TODO should be tracking players hands
+    this.throwAways[seatNum] = true;
+    console.log("throwAways: " + this.throwAways.toString());
+    var allTrue = this.throwAways.every(function (e) {
+      return e;
+    });
+    
+    if(allTrue) {
+       console.log("update state to makebid");
+      this.state = "makeBid";
+    }
+  }
 }
 
 module.exports = Game;
